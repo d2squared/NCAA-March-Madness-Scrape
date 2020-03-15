@@ -1,10 +1,741 @@
 # NCAA-March-Madness-Scrape
 My friend and I set out to build a machine learning model for the March Madness tournament in January 2020 and planned to enter it in the Google Cloud & NCAA ML Competition. This week, it was announced that March Madness was canceled due to COVID-19, also known as coronavirus. However, in the weeks leading up to the tournament, we scrapped Ken Pomeroy’s website, kenpom.com, for data since 2002. Below, I outline how we scrapped the gathered data from the website. In addition, the data files that I scrapped for the years 2002-2019 are on my Github page.
 
+#### Packages:
+
 ```{r}
 library(rvest)
 library(stringr)
 library(tidyr)
 library(dplyr)
 library(parallel)
+```
+
+#### Scrapping the Home Page:
+
+Scrapping the homepage is relatively straightforward because it is not password protected. Due to this, I scrapped this page first. Outside of R, I created a CSV with the output of the table name, so in the scrape, each year is given a name, such as "2003_Home_Page.csv."
+
+```{r eval = FALSE}
+URL <- "https://kenpom.com/index.php?y="
+years <- read.csv("Years.csv", stringsAsFactors = FALSE)
+
+get_home_page_pre_2020 <- function(table_name, url, year) {
+  Sys.sleep(1)
+  out = tryCatch({
+    link = paste0(url, year, sep = "")
+    ken_pom = read_html(link)
+    ken_pom_table = ken_pom %>% 
+      html_table(fill=TRUE)
+    home_table = data.table::rbindlist(ken_pom_table, fill=TRUE)
+    output = list(table_name = home_table)
+    return(output)
+  }, error = function(e){
+    print(year)
+  }) 
+  closeAllConnections()
+  return(out)
+}
+
+home_page <- mapply(get_home_page_pre_2020, years$Home_Page, URL, years$Year)
+```
+
+After scrapping the data, I created a function to clean up the tables and prepare them to be exported to my computer in CSV format. I created the object, "home_page_col_names" to add names to the columns. The following names were used for the columns:
+  
+  - Overall_Rank
+  
+  - Team
+  
+  - Home_Page_Luck 
+  
+  - Home_Page_Luck_Rank
+  
+  - Home_Page_Strength_Of_Schedule_AdjEM
+  
+  - Home_Page_Strength_Of_Schedule_AdjEM_Rank 
+  
+  - Home_Page_Strength_Of_Schedule_Of_Schedule_Opp_O
+  
+  - Home_Page_Strength_Of_Schedule_Of_Schedule_Opp_O_Rank 
+  
+  - Home_Page_Strength_Of_Schedule_Of_Schedule_Opp_D
+  
+  - Home_Page_Strength_Of_Schedule_Of_Schedule_Opp_D_Rank
+  
+  - Home_Page_NCSOS_AdjEM
+  
+  - Home_Page_NCSOS_AdjEM_Rank
+
+Function home_page_clean_up explained:
+
+  1. Function takes the inputs table, name, and year
+  
+  2. Used tryCatch in case there is an error
+
+  3. Dropped unnecessary rows from the data frame that do not contain any team information
+
+  4. Selected only necessary columns from the data frame
+
+  5. Removed all numbers from the columns
+
+  6. Removes trailing and leading spaces from the column
+
+  7. Renames the columns in the data frame
+
+  8. Merges the data frame titled “cleanup” in the function with the data frame containing the unique ID’s of the teams
+
+  9. Adds the year to the data frame
+  
+  10. Combines the team's unique IDs and adds the year in the format, such as “2018_223” which corresponds to the 2018 season for the Notre Dame basketball team.
+
+  11.	Creates an output so that there is a list with the name of the homepage and the cleaned-up data frame
+
+  12. Returns the object titled “output”
+
+  13. Prints the year of if there is an error
+
+  14. Returns the results from the tryCatch
+  
+```{r eval = FALSE}
+home_page_col_names <- c("Overall_Rank", "Team", "Home_Page_Luck", "Home_Page_Luck_Rank", 
+                         "Home_Page_Strength_Of_Schedule_AdjEM", "Home_Page_Strength_Of_Schedule_AdjEM_Rank",
+                         "Home_Page_Strength_Of_Schedule_Opp_O", "Home_Page_Strength_Of_Schedule_Opp_O_Rank",
+                         "Home_Page_Strength_Of_Schedule_Opp_D", "Home_Page_Strength_Of_Schedule_Opp_D_Rank",
+                         "Home_Page_NCSOS_AdjEM", "Home_Page_NCSOS_AdjEM_Rank")
+home_page_clean_up <- function(table, name, year) { # 1.
+  out = tryCatch ({ # 2. 
+    cleanup = table[-c(1, 42, 43, 84, 85, 126, 127, 168, 169, 210, 211, 252, 253, 294, 295, 336, 337), ] # 3.
+    cleanup = cleanup[,c(1:2, 12:21)] # 4.
+    cleanup$V2 = str_replace_all(cleanup$V2, "[0-9]+", "") # 5.
+    cleanup$V2 = str_squish(cleanup$V2) # 6.
+    colnames(cleanup) <- home_page_col_names # 7.
+    cleanup = merge(team_unique_id, cleanup, by.x="Team", by.y = "Team") # 8.
+    cleanup$Year = year # 9. 
+    cleanup$Year_Index = paste(year, cleanup$Unique_Identfier, sep = "_") # 10.
+    output = list(name = cleanup) # 11.
+    return(output) # 12.
+  }, error = function(e){
+    print(year) # 13.
+  })
+  
+  return(out) # 14. 
+}
+home_table_clean_up <- mapply(home_page_clean_up, home_page, years$Home_Page, years$Year)
+```
+
+Finally, I created a function titled, "make_tables_home_page," that exported the tables and directed them to the appropriate folder on my desktop.
+
+Function make_tables_home_page explained:
+
+  1. Takes the inputs x, name, table, and path 
+
+  2. Creates a name for the file such as “2004_Home_Page.csv”
+
+  3. Creates the path for the file 
+
+  4. Gets the corresponding data frame for the year from the list of data frames
+
+  5. Writes the CSV out and puts it in the proper folder
+
+```{r eval = FALSE}
+Path <- "/Users/joeyj/Desktop/Desktop/R/March Madness/Ken Pom/Data/Home_Page/"
+make_tables_home_page <- function(x, name, table, path) { # 1.
+  file_name = paste0(name[x], "_Home_Page.csv", sep="") # 2. 
+  path = paste0(path, sep ="") # 3.
+  file = table[[x]] # 4.
+  write.csv(file, file.path(path, file_name), row.names = FALSE) # 5.
+}
+lapply(1:18, make_tables_home_page, years$Year, home_table_clean_up, Path)
+```
+
+#### Ken Pom Game Plan Schedule
+
+The next portion of Ken Pomoray's website that I wanted to take information from is password protected. Luckily for me, the person I am working on this project with subscribes to Ken Pom, but I still had to enter the password and then redirect the page to the URL I was interested in.
+
+Login Object Explained:
+
+  1. Uses the object my_session
+
+  2. Uses html_form
+
+  3. Sets the values for email equal to “*******@yahoo.com” and password equal to “********”
+
+Logged_In Object Expalined:
+
+  1. Uses the objet my_session
+  
+  2. Submits the infomration from the object login
+
+```{r eval = FALSE}
+url <- "https://kenpom.com/"
+teams_unique_ID <- read.csv("Team_Unique_Id.csv", stringsAsFactors = FALSE)
+my_session <- html_session(url)
+login <- my_session %>% # 1. 
+  html_node("form[id=login]") %>% # 2.
+  html_form() %>% # 2.
+  set_values(email = "*******@yahoo.com", # 3.
+             password = "********")
+
+logged_in <- my_session %>% # 1.
+  submit_form(login) # 2.
+teams <- read.csv("Teams_2002_2019.csv", stringsAsFactors = FALSE)
+```
+
+Next, I created a function that got the gameplan from Ken Pom's website. This function ran through 6,157 to get the schedule of every team for every year since 2002. 
+
+Function get_game_plan Explained:
+
+  1. Takes the inputs table_name, name, url, and year
+  
+  2. Makes the function sleep for 1 second to avoid overloading the website
+  
+  3. Used tryCatch in case there is an error
+  
+  4. Creates the link in the format of url, name, and year. It comes out in a format such as “https://kenpom.com/gameplan.php?team=Notre%20Dame&y=2014”
+  
+  5. Uses the object titled logged_in 
+  
+  6. Takes the page to the link 
+  
+  7. Reads the html and assigns the output to res
+  
+  8. Passes the contents from res
+  
+  9. Uses html_table to extract table elements from the html 
+  
+  10. Creates the object output and adds a list of the table_name and res
+  
+  11. Returns the output 
+  
+  12. If there is an error it prints the team and year
+  
+  13. Closes all connections 
+  
+  14. Returns the output
+  
+```{r eval = FALSE}
+get_game_plan <- function (table_name, name, url, year) { # 1.
+  Sys.sleep(1) # 2.
+  out = tryCatch ({ # 3.
+    link <- paste0(url, name, "&y=", year, sep = "") # 4.
+    res <- logged_in %>% # 5.
+      jump_to(link) %>% # 6.
+      read_html() # 7.
+    res <- res %>% # 8.
+      html_table(fill=TRUE) %>% # 9.
+      `[[`(1)
+    output = list(table_name = res) # 10.
+    return(output) # 11.
+  }, error = function(e){
+    print(paste(name, year, sep = " ")) # 12.
+  })
+  closeAllConnections() # 13.
+  
+  return(out) # 14.
+}
+```
+
+Due to the number of files I wanted to scrape, I decided to parallel the operation across multiple cores of my computer. My computer has 12 cores, so I decided to use 11 of them to do this operation. Also, whenever using parallel in r, you have to send any functions, data frames, lists, and any imported libraries across all cores of the computer.
+
+```{r eval = FALSE}
+game_plan_url <- "https://kenpom.com/gameplan.php?team="
+cl <- parallel::makeCluster(detectCores() - 1)
+parallel::clusterExport(cl, c("get_game_plan", "teams", "game_plan_url", "url", "my_session",
+                              "login", "logged_in"))
+clusterEvalQ(cl, library(rvest))
+clusterEvalQ(cl, library(stringr))
+clusterEvalQ(cl, library(tidyr))
+clusterEvalQ(cl, library(dplyr))
+schedule <- parallel::mcmapply(get_game_plan, teams$Schedule_Name, teams$Link, game_plan_url, teams$Year)
+```
+
+After the scrape ran, I decided to clean up the tables and add new column names. I also created a cleanup function that formatted all of the data frames to be in the exact format that I wanted them to be in. I added the following names:
+
+  - Date
+  
+  - Team_2_Rank 
+  
+  - Team_2
+  
+  - Result
+  
+  - Location
+  
+  - Pace
+  
+  - Offemse_Eff
+  
+  - Offense_Eff_Rank
+  
+  - Offense_eFG
+  
+  - Offense_TO
+  
+  - Offense_OR
+  
+  - Offense_FTR
+  
+  - Offense_2P_Shots
+  
+  - Offense_2P_Percent 
+  
+  - Offense_3P_Shots
+  
+  - Offense_3P_Percent 
+  
+  - Offense_3P_Attempts_Percent
+  
+  - Defense_EFF
+  
+  - Defense_EFF_Rank
+  
+  - Defense_eFG
+  
+  - Deffemse_TO
+  
+  - Defense_OR
+  
+  - Defense_FTR
+  
+  - Defense_2P_shots
+  
+  - Defense_2P_Percent 
+  
+  - Defense_3P_Shots
+  
+  - Defense_3P_Percent
+  
+  - Defense_3P_Attempts_Percent
+
+Function clean_up_schedule Explained:
+
+  1. Takes the inputs table, team_name, year, year_index, unoqie_identifier, and team_name
+  
+  2. Used tryCatch in case there is an error
+  
+  3. Renames the columns in the data frame
+  
+  4. Drops the first row
+  
+  5. Filters out certain rows that do not meet the conditions
+  
+  6. Changes the column "Offense_3P_Attempts_Percent" to a numeric data type
+  
+  7. Subtracts 100 - "Offense_3P_Attempts_Percent" to find the "Offense_2P_Attempts_Percent"
+  
+  8. Changes the column "Defense_3P_Attempts_Percent" to a numeric data type
+  
+  9. Subtracts 100 - "Defense_3P_Attempts_Percent" to find the "Defense_2P_Attempts_Percent"
+  
+  10. Separates the column "Result" by "-"
+  
+  11. Creates the column "Team_1_Score" based on whether or not team 1 won
+  
+  12. Creates the column "Team_2_Score" based on whether team 1 lossed
+  
+  13. Drops the 5th and 6th columns
+  
+  14. Adds the name of Team_1
+  
+  15. Adds the season year
+  
+  16. Adds the year index
+  
+  17. Adds the unique identifier of the team 
+  
+  18. Trims and replaces anuthing that begins with one charcter that is not a whitespace
+  
+  19. Replaces "H" in the Location column with "Team_1 H"
+  
+  20. Replaces anything that begins and ends with "h" in the location column with "Team_1_H"
+  
+  21. Replaces "A" in the location column with "Team_2_H"
+  
+  22. Replaces anything that begins and ends with "a" in the location column with "Team_2_H"
+  
+  23. Adds the unique ID of Team 2
+  
+  24. Changes the column name to "Team_2_Unique_Identifier"
+  
+  25. Creates the column titled "Team_2_Season_Index" which contains the season and Team_2 Index. 
+  
+  26. Selects certain columns and reorders them
+  
+  27. Creates the object output, which contains the dataframe with the proper name
+  
+  28. If there is an erro rit returns the team and year
+  
+  29. returns the out from the tryCatch 
+
+```{r eval = FALSE} 
+new_names <- c("Date", "Team_2_Rank", "Team_2", "Result", "Location", "Pace", "Offense_Eff",
+               "Offense_Eff_Rank", "Offense_eFG", "Offense_TO", "Offense_OR", "Offense_FTR",
+               "Offense_2P_Shots", "Offense_2P_Percent", "Offense_3P_Shots", 
+               "Offense_3P_Percent", "Offense_3P_Attempts_Percent", "Defense_EFF", "Defense_EFF_Rank",
+               "Defense_eFG", "Deffense_TO", "Defense_OR", "Defense_FTR", "Defense_2P_Shots",
+               "Defense_2P_Percent", "Defense_3P_Shots", "Defense_3P_Percent", "Defense_3P_Attempts_Percent")
+clean_up_schedule <- function(table, team_name, year, year_index, unique_identifier, table_name){ # 1.
+  out = tryCatch ({ # 2.
+    colnames(table) <- new_names # 3.
+    table2 <- table[-1,] # 4.
+    table2 <- table2 %>% # 5.
+      filter(!is.na(Location)) %>% 
+      filter(Location != "Correlations (R x 100)") %>% 
+      filter(Location != "to offensive efficiency:") %>% 
+      filter(Location != "to defensive efficiency:")
+    table2$Offense_3P_Attempts_Percent <- as.numeric(table2$Offense_3P_Attempts_Percent) # 6.
+    table2$Offense_2P_Attempts_Percent <- 100 - table2$Offense_3P_Attempts_Percent # 7.
+    table2$Defense_3P_Attempts_Percent <- as.numeric(table2$Defense_3P_Attempts_Percent) # 8.
+    table2$Defense_2P_Attempts_Percent <- 100 - table2$Defense_3P_Attempts_Percent # 9.
+    table2 <- separate(table2, "Result", c("a", "b"), sep = "-", remove = FALSE) # 10.
+    table2$Team_1_Score = ifelse(str_detect(table2$a, "W"), str_replace_all(table2$a, "W, ", ""), table2$b) # 11.
+    table2$Team_2_Score = ifelse(str_detect(table2$a, "L"), str_replace_all(table2$a, "L, ", ""), table2$b) # 12.
+    table2 <- table2[,-c(5,6)] # 13.
+    table2$Team_1 <- team_name # 14.
+    table2$Season <- year # 15.
+    table2$Team_1_Season_Index <- year_index # 16.
+    table2$Team_1_Unique_Identifier <- unique_identifier # 17.
+    table2$Date_Number <- str_trim(str_replace_all(table2$Date, "^\\S*", "")) # 18.
+    table2$Location <- str_replace_all(table2$Location, "H", "Team_1_H") # 19.
+    table2$Location <- str_replace_all(table2$Location, "^h$", "Team_1_H") # 20
+    table2$Location <- str_replace_all(table2$Location, "A", "Team_2_H") # 21
+    table2$Location <- str_replace_all(table2$Location, "^a$", "Team_2_H") # 22.
+    table3 <- merge(table2, teams_unique_ID, by.x = "Team_2", by.y = "Team") # 23.
+    colnames(table3)[38] <- "Team_2_Unique_Identifier" # 24.
+    table3$Team_2_Season_Index <- paste(table3$Season, table3$Team_2_Unique_Identifier, sep = "_") # 25.
+    table3 <- table3[c(34,2,37, 33, 36, 35, 1, 38, 39, 3, 4, 31, 32, 5:17, 29, 18:28, 30)] # 26.
+    output = list(table_name=table3) # 27. 
+    return(output)}, error = function(e) { 
+      print(paste(team_name, year_index, sep = " ")) # 28.
+    })
+  return(out) # 29. 
+}
+final_schedule <- mapply(clean_up_schedule, schedule, teams$Team, teams$Year, teams$Year_Index, teams$Unique_Identfier, teams$Schedule_Name)
+```
+
+Next, I worked on exporting the tables. The interesting part about the following code is that it takes the year from the table name and maps the csv file to the appropriate year file. Thus, there will be a folder titled "2017" within "Schedules" that contains all of the schedules and statistics for teams from the 2017 season.
+
+Function export Explained:
+
+  1. Takes the inputs x, name, table, and path
+  
+  2. Creates a file name for file
+  
+  3. extracts the year
+  
+  4. creates the path for file
+  
+  5. Gets the schedule from the table
+  
+  6. Writes the file out and directs it to the correct path
+  
+```{r eval = FALSE}
+export <- function(x, name, table, path) { # 1. 
+  file_name_schedule = paste0(name[x], ".csv", sep = "") # 2.
+  year = str_extract(name[x], "[0-9]+") # 3. 
+  path_schedule = paste0(path, year, "/", sep ="") # 4.
+  schedule = table[[x]] # 5.
+  write.csv(schedule, file.path(path_schedule, file_name_schedule), row.names = FALSE) # 6.
+}
+
+lapply(1:6157, export, teams2$Schedule_Name, final_schedule_501_6157,
+       "/Users/joeyj/Desktop/Desktop/R/March Madness/Ken Pom/Data/Schedule/")
+```
+
+#### Stats Tab:
+
+Within the stats tab, Ken Pom includes data on Efficiency, Four Factors, Play Stats, Point Distribution, Height/Experience, and Misc. Team Stats. I decided that I did not care about player stats for the model I was building because the tab does not include player stats for an entire time. However, I did decided to take the rest of the information from the website.
+
+Function get_ken_pom Explained:
+
+  1. Takes the inputs name, url, year, and other_url
+  
+  2. Makes the function sleep for 1 second to avoid overloading the website
+  
+  3. Used tryCatch in case there is an error
+  
+  4. Creates the link in the format of url, name, and year. It comes out in a format such as "https://kenpom.com/summary.php?y=2012"
+  
+  5. Uses the object titled logged_in
+  
+  6. Takes the page to the link
+  
+  7. Reads the html and assigns the output to res
+  
+  8. Passes the contents from res
+  
+  9. Uses html_table to extract table elements from the html
+  
+  10. Turns the object res into a data frame
+  
+  11. Creates the object x and adds a list of the name and res
+  
+  12. Returns x
+  
+  13. If there is an error the function prints the year
+  
+  14. Closes all connections
+  
+  15. Returns the output of the function
+  
+```{r eval = FALSE}
+
+get_ken_pom <- function (name, url, year, other_url) { # 1.
+  Sys.sleep(1) # 2.
+  out = tryCatch ({ # 3.
+    link <- paste0(url, year, other_url, sep = "") # 4.
+    res <- logged_in %>% # 5.
+      jump_to(link) %>% # 6.
+      read_html() # 7.
+    res <- res %>% # 8.
+      html_table(fill=TRUE) # 9.
+    res = data.frame(res) # 10.
+    x = list(name = res) # 11.
+    return(x) # 12.
+  }, error = function(e){
+    print(year) # 13.
+  })
+  closeAllConnections() # 14.
+  
+  return(out) # 15.
+}
+```
+
+Next, I created a function to cleanup the dataframes that result from running get_ken_pom.
+
+Function clean_up_columns Explained:
+
+  1. Takes the inputs table, name, x, and y 
+  
+  2. Used tryCatch in case there is an error
+  
+  3. Select columns x through y
+  
+  4. Sets columns names to Null
+  
+  5. Sets column names to the first row of the data frame
+  
+  6. Drops unnecessary rows that do not contain information
+  
+  7. Removes all numbers from the "Team" column
+  
+  8. Removes trailing and leading spaces from the column 
+  
+  9. Creates an output so that there is a list with the name and the cleanup data frame
+  
+  10. Returns the output
+  
+  11. Prints the name of the table if there is an error
+  
+  12. Returns out
+
+```{r eval = FALSE}
+clean_up_columns <- function(table, name, x,y) { # 1.
+  out = tryCatch ({ # 2.
+    cleanup = table
+    cleanup = cleanup[, x:y] # 3.
+    colnames(cleanup) = NULL # 4.
+    colnames(cleanup) = as.character(unlist(cleanup[1,])) # 5.
+    cleanup = cleanup[-c(1, 42, 43, 84, 85, 126, 127, 168, 169, 210, 211, 252, 253, 294, 295),] # 6.
+    cleanup$Team = str_replace_all(cleanup$Team, "[0-9]+", "") # 7.
+    cleanup$Team = str_squish(cleanup$Team) #8.
+    output = list(name=cleanup) # 9.
+    return(output) # 10.
+  }, error = function(e){
+    print(name[x]) # 11.
+  })
+  
+  return(out) # 12.
+}
+```
+
+Function make_tables Explained:
+
+  1. Function takes the inputs x, name, table, and path
+  
+  2. Creates the file name in the format such as "2002_Efficiency.csv"
+  
+  3. Gets the data frame from the list of data frames passed into the list
+  
+  4. Writes out the data frame and assigns it to the correct folder
+
+```{r eval = FALSE}
+make_tables <- function(x, name, table, path) { # 1.
+  file_name <- paste0(name[x], ".csv", sep="") # 2.
+  file = table[[x]] # 3.
+  write.csv(file, file.path(path, file_name)) # 4.
+}
+```
+
+#### Efficiency:
+
+```{r eval = FALSE}
+efficiecny_path <- "/Users/joeyj/Desktop/Desktop/R/March Madness/Ken Pom/Data/Efficiency/"
+efficiency <- mapply(get_ken_pom, 
+                     years$Stats, 
+                     "https://kenpom.com/summary.php?y=",
+                     years$Year,
+                     "")
+efficiency_clean_up <- mapply(clean_up_columns, efficiency, years$Stats, 1, 18)
+lapply(1:18, make_tables, name = years$Stats, table = efficiency_clean_up, efficiecny_path)
+```
+
+##### Four Factors:
+
+```{r eval = FALSE}
+four_factors_path <- "/Users/joeyj/Desktop/Desktop/R/March Madness/Ken Pom/Data/Four_Factors/"
+four_factors <- mapply(get_ken_pom, 
+                     years$Four_Factors, 
+                     "https://kenpom.com/stats.php?y=",
+                     years$Year,
+                     "&s=RankAdjOE")
+four_factors_clean_up <- mapply(clean_up_columns, four_factors, years$Four_Factors, x=1, y=24)
+lapply(1:18, make_tables, name=years$Four_Factors, table=four_factors_clean_up, four_factors_path)
+```
+
+#### Point Distribution:
+
+```{r eval = FALSE}
+point_distribution_path <- "/Users/joeyj/Desktop/Desktop/R/March Madness/Ken Pom/Data/Point_Distribution/"
+point_distribution <- mapply(get_ken_pom,
+                             years$Point_Distribution,
+                             "https://kenpom.com/pointdist.php?y=",
+                             years$Year,
+                             "")
+point_distribution_clean_up <- mapply(clean_up_columns, point_distribution_clean_up, years$Point_Distribution)
+lapply(1:18, make_tables, name = years$Point_Distribution, table = point_distribution_clean_up, point_distribution_path)
+```
+
+#### Offense Msc Teams Stats
+
+The offense and defense teams stats followed a different pattern than the other tables, so I had to create a different function to cleanup the data frame.
+
+Function clean_up_msc Explained:
+
+  1. Takes the inputs table and name
+  
+  2. Used tryCatch in case there is an error
+  
+  3. Sets columns names to NULL
+  
+  4. Sets column names to row 41
+  
+  5. Drops unnecessary rows
+  
+  6. Sets row names to NULL
+  
+  7. Removes all numbers from the “Team” column
+  
+  8. Removes trailing and leading spaces from the column
+  
+  9. Creates an output so that there is a list with the name and the cleanup data frame
+  
+  10. Returns the output
+  
+  11. Prints the name of the table if there is an error
+  
+  12. Returns out
+
+```{r eval = FALSE}
+clean_up_msc <- function(table, name) { # 1.
+  out = tryCatch ({ # 2.
+    cleanup = table
+    colnames(cleanup) = NULL # 3.
+    colnames(cleanup) = as.character(unlist(cleanup[41,])) # 4.
+    cleanup = cleanup[-c(41, 82, 123, 164, 205, 246, 287, 328),] # 5.
+    rownames(cleanup) = NULL # 6.
+    cleanup$Team = str_replace_all(cleanup$Team, "[0-9]+", "") # 7.
+    cleanup$Team = str_squish(cleanup$Team) # 8.
+    output = list(name = cleanup) # 9.
+    return(output) # 10.
+  }, error = function(e){
+    print(name[x]) # 11.
+  })
+  
+  return(out) # 12.
+}
+```
+
+```{r eval = FALSE}
+offense_msc_team_stats_path <- "/Users/joeyj/Desktop/Desktop/R/March Madness/Ken Pom/Data/Msc_Team_Stats_Offense/"
+offense_msc_team_stats <- mapply(get_ken_pom,
+                         years$Offense_Msc_Team_Stats,
+                         "https://kenpom.com/teamstats.php?s=RankFG3Pct&y=",
+                         years$Year,
+                         "")
+offense_msc_team_stats_cleanup <- mapply(clean_up_msc, offense_msc_team_stats, years$Offense_Msc_Team_Stats)
+lapply(1:18, make_tables, years$Offense_Msc_Team_Stats, offense_msc_team_stats_cleanup, offense_msc_team_stats_path)
+```
+
+```{r eval = FALSE}
+defense_msc_team_stats_path <- "/Users/joeyj/Desktop/Desktop/R/March Madness/Ken Pom/Data/Msc_Team_Stats_Defense/"
+defense_msc_team_stats <-  mapply(get_ken_pom,
+                                  years$Defense_Msc_Team_Stats,
+                                  "https://kenpom.com/teamstats.php?s=RankFG3Pct&y=",
+                                  years$Year,
+                                  "&od=d")
+defense_msc_team_stats_clean_up <- mapply(clean_up_msc, defense_msc_team_stats, years$Defense_Msc_Team_Stats)
+lapply(1:18, make_tables, years$Defense_Msc_Team_Stats, defense_msc_team_stats_clean_up, defense_msc_team_stats_path)
+```
+
+#### Height/Experience
+
+Once again, the height and expirience column followed a different pattern than the other tables so I had to create a different clean up function.
+
+Function clean_up_team_experience Explained:
+
+  1. Takes the inputs table and name
+  
+  2. Used tryCatch in case there is an error
+  
+  3. Sets columns names to NULL
+  
+  4. Sets column names to row 41
+  
+  5. Drops unnecessary rows
+  
+  6. Sets row names to NULL
+  
+  7. Removes all numbers from the “Team” column
+  
+  8. Removes trailing and leading spaces from the column
+  
+  9. Creates an output so that there is a list with the name and the cleanup data frame
+  
+  10. Returns the output
+  
+  11. prints the name of the table if there is an error
+  
+  12. Returns out
+  
+```{r eval = FALSE}
+clean_up_team_experience <- function(table, name) { # 1.
+  out = tryCatch ({ # 2.
+    cleanup = table 
+    colnames(cleanup) = NULL # 3.
+    colnames(cleanup) = as.character(unlist(cleanup[41,])) # 4.
+    cleanup = cleanup[-c(41, 82, 123, 164, 205, 246, 287),] # 5.
+    rownames(cleanup) = NULL # 6.
+    cleanup$Team = str_replace_all(cleanup$Team, "[0-9]+", "") # 7.
+    cleanup$Team = str_squish(cleanup$Team) # 8.
+    output = list(name = cleanup) # 9.
+    return(output) # 10.
+  }, error = function(e){
+    print(name[x]) # 11.
+  })
+  
+  return(out) # 12.
+}
+```
+
+```{r eval = FALSE}
+height <- read.csv("height_experience_years.csv", stringsAsFactors = FALSE)
+height_experience_path <- "/Users/joeyj/Desktop/Desktop/R/March Madness/Ken Pom/Data/Height_Experience/"
+height_exerperience <-  mapply(get_ken_pom,
+                               height$Height_Experience,
+                               "https://kenpom.com/height.php?s=SizeRank&y=",
+                               height$Year,
+                               "")
+height_experience_clean_up <- mapply(clean_up_team_experience, height_exerperience, height$Height_Experience)
+height_experience_clean_up <- mapply(clean_up_columns, height_experience_clean_up, height$Height_Experience, 1, 22)
+lapply(1:13, make_tables, height$Height_Experience, height_experience_clean_up, height_experience_path)
 ```
