@@ -1,0 +1,370 @@
+"Team","Unique_Identfier"
+"Abilene Christian",1
+"Air Force",2
+"Akron",3
+"Alabama",4
+"Alabama A&M",5
+"Alabama St.",6
+"Albany",7
+"Alcorn St.",8
+"American",9
+"Appalachian St.",10
+"Arizona",11
+"Arizona St.",12
+"Arkansas",13
+"Arkansas Little Rock",14
+"Arkansas Pine Bluff",15
+"Arkansas St.",16
+"Army",17
+"Auburn",18
+"Austin Peay",19
+"Ball St.",20
+"Baylor",21
+"Belmont",22
+"Bethune Cookman",23
+"Binghamton",24
+"Birmingham Southern",25
+"Boise St.",26
+"Boston College",27
+"Boston University",28
+"Bowling Green",29
+"Bradley",30
+"Brown",31
+"Bryant",32
+"Bucknell",33
+"Buffalo",34
+"Butler",35
+"BYU",36
+"Cal Baptist",37
+"Cal Poly",38
+"Cal St. Bakersfield",39
+"Cal St. Fullerton",40
+"Cal St. Northridge",41
+"California",42
+"Campbell",43
+"Canisius",44
+"Centenary",45
+"Central Arkansas",46
+"Central Connecticut",47
+"Central Michigan",48
+"Charleston",49
+"Charleston Southern",50
+"Charlotte",51
+"Chattanooga",52
+"Chicago St.",53
+"Cincinnati",54
+"Clemson",55
+"Cleveland St.",56
+"Coastal Carolina",57
+"Colgate",58
+"College of Charleston",59
+"Colorado",60
+"Colorado St.",61
+"Columbia",62
+"Connecticut",63
+"Coppin St.",64
+"Cornell",65
+"Creighton",66
+"Dartmouth",67
+"Davidson",68
+"Dayton",69
+"Delaware",70
+"Delaware St.",71
+"Denver",72
+"DePaul",73
+"Detroit",74
+"Drake",75
+"Drexel",76
+"Duke",77
+"Duquesne",78
+"East Carolina",79
+"East Tennessee St.",80
+"Eastern Illinois",81
+"Eastern Kentucky",82
+"Eastern Michigan",83
+"Eastern Washington",84
+"Elon",85
+"Evansville",86
+"Fairfield",87
+"Fairleigh Dickinson",88
+"FIU",89
+"Florida",90
+"Florida A&M",91
+"Florida Atlantic",92
+"Florida Gulf Coast",93
+"Florida St.",94
+"Fordham",95
+"Fort Wayne",96
+"Fresno St.",97
+"Furman",98
+"Gardner Webb",99
+"George Mason",100
+"George Washington",101
+"Georgetown",102
+"Georgia",103
+"Georgia Southern",104
+"Georgia St.",105
+"Georgia Tech",106
+"Gonzaga",107
+"Grambling St.",108
+"Grand Canyon",109
+"Green Bay",110
+"Hampton",111
+"Hartford",112
+"Harvard",113
+"Hawaii",114
+"High Point",115
+"Hofstra",116
+"Holy Cross",117
+"Houston",118
+"Houston Baptist",119
+"Howard",120
+"Idaho",121
+"Idaho St.",122
+"Illinois",123
+"Illinois Chicago",124
+"Illinois St.",125
+"Incarnate Word",126
+"Indiana",127
+"Indiana St.",128
+"Iona",129
+"Iowa",130
+"Iowa St.",131
+"IPFW",132
+"IUPUI",133
+"Jackson St.",134
+"Jacksonville",135
+"Jacksonville St.",136
+"James Madison",137
+"Kansas",138
+"Kansas St.",139
+"Kennesaw St.",140
+"Kent St.",141
+"Kentucky",142
+"La Salle",143
+"Lafayette",144
+"Lamar",145
+"Lehigh",146
+"Liberty",147
+"Lipscomb",148
+"Little Rock",149
+"LIU Brooklyn",150
+"Long Beach St.",151
+"Longwood",152
+"Louisiana",153
+"Louisiana Lafayette",154
+"Louisiana Monroe",155
+"Louisiana Tech",156
+"Louisville",157
+"Loyola Chicago",158
+"Loyola Marymount",159
+"Loyola MD",160
+"LSU",161
+"Maine",162
+"Manhattan",163
+"Marist",164
+"Marquette",165
+"Marshall",166
+"Maryland",167
+"Maryland Eastern Shore",168
+"Massachusetts",169
+"McNeese St.",170
+"Memphis",171
+"Mercer",172
+"Miami FL",173
+"Miami OH",174
+"Michigan",175
+"Michigan St.",176
+"Middle Tennessee",177
+"Middle Tennessee St.",178
+"Milwaukee",179
+"Minnesota",180
+"Mississippi",181
+"Mississippi St.",182
+"Mississippi Valley St.",183
+"Missouri",184
+"Missouri St.",185
+"Monmouth",186
+"Montana",187
+"Montana St.",188
+"Morehead St.",189
+"Morgan St.",190
+"Morris Brown",191
+"Mount St. Mary's",192
+"Murray St.",193
+"N.C. State",194
+"Navy",195
+"Nebraska",196
+"Nebraska Omaha",197
+"Nevada",198
+"New Hampshire",199
+"New Mexico",200
+"New Mexico St.",201
+"New Orleans",202
+"Niagara",203
+"Nicholls St.",204
+"NJIT",205
+"Norfolk St.",206
+"North Alabama",207
+"North Carolina",208
+"North Carolina A&T",209
+"North Carolina Central",210
+"North Dakota",211
+"North Dakota St.",212
+"North Florida",213
+"North Texas",214
+"Northeastern",215
+"Northern Arizona",216
+"Northern Colorado",217
+"Northern Illinois",218
+"Northern Iowa",219
+"Northern Kentucky",220
+"Northwestern",221
+"Northwestern St.",222
+"Notre Dame",223
+"Oakland",224
+"Ohio",225
+"Ohio St.",226
+"Oklahoma",227
+"Oklahoma St.",228
+"Old Dominion",229
+"Oral Roberts",230
+"Oregon",231
+"Oregon St.",232
+"Pacific",233
+"Penn",234
+"Penn St.",235
+"Pepperdine",236
+"Pittsburgh",237
+"Portland",238
+"Portland St.",239
+"Prairie View A&M",240
+"Presbyterian",241
+"Princeton",242
+"Providence",243
+"Purdue",244
+"Purdue Fort Wayne",245
+"Quinnipiac",246
+"Radford",247
+"Rhode Island",248
+"Rice",249
+"Richmond",250
+"Rider",251
+"Robert Morris",252
+"Rutgers",253
+"Sacramento St.",254
+"Sacred Heart",255
+"Saint Joseph's",256
+"Saint Louis",257
+"Saint Mary's",258
+"Saint Peter's",259
+"Sam Houston St.",260
+"Samford",261
+"San Diego",262
+"San Diego St.",263
+"San Francisco",264
+"San Jose St.",265
+"Santa Clara",266
+"Savannah St.",267
+"Seattle",268
+"Seton Hall",269
+"Siena",270
+"SIU Edwardsville",271
+"SMU",272
+"South Alabama",273
+"South Carolina",274
+"South Carolina St.",275
+"South Dakota",276
+"South Dakota St.",277
+"South Florida",278
+"Southeast Missouri St.",279
+"Southeastern Louisiana",280
+"Southern",281
+"Southern Illinois",282
+"Southern Miss",283
+"Southern Utah",284
+"Southwest Missouri St.",285
+"Southwest Texas St.",286
+"St. Bonaventure",287
+"St. Francis NY",288
+"St. Francis PA",289
+"St. John's",290
+"Stanford",291
+"Stephen F. Austin",292
+"Stetson",293
+"Stony Brook",294
+"Syracuse",295
+"TCU",296
+"Team",297
+"Temple",298
+"Tennessee",299
+"Tennessee Martin",300
+"Tennessee St.",301
+"Tennessee Tech",302
+"Texas",303
+"Texas A&M",304
+"Texas A&M Corpus Chris",305
+"Texas Pan American",306
+"Texas Southern",307
+"Texas St.",308
+"Texas Tech",309
+"The Citadel",310
+"Toledo",311
+"Towson",312
+"Troy",313
+"Troy St.",314
+"Tulane",315
+"Tulsa",316
+"UAB",317
+"UC Davis",318
+"UC Irvine",319
+"UC Riverside",320
+"UC Santa Barbara",321
+"UCF",322
+"UCLA",323
+"UMass Lowell",324
+"UMBC",325
+"UMKC",326
+"UNC Asheville",327
+"UNC Greensboro",328
+"UNC Wilmington",329
+"UNLV",330
+"USC",331
+"USC Upstate",332
+"UT Arlington",333
+"UT Rio Grande Valley",334
+"Utah",335
+"Utah St.",336
+"Utah Valley",337
+"Utah Valley St.",338
+"UTEP",339
+"UTSA",340
+"Valparaiso",341
+"Vanderbilt",342
+"VCU",343
+"Vermont",344
+"Villanova",345
+"Virginia",346
+"Virginia Tech",347
+"VMI",348
+"Wagner",349
+"Wake Forest",350
+"Washington",351
+"Washington St.",352
+"Weber St.",353
+"West Virginia",354
+"Western Carolina",355
+"Western Illinois",356
+"Western Kentucky",357
+"Western Michigan",358
+"Wichita St.",359
+"William & Mary",360
+"Winston Salem St.",361
+"Winthrop",362
+"Wisconsin",363
+"Wofford",364
+"Wright St.",365
+"Wyoming",366
+"Xavier",367
+"Yale",368
+"Youngstown St.",369
