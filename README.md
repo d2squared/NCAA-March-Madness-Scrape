@@ -3,7 +3,7 @@ My friend and I set out to build a machine learning model for the March Madness 
 
 #### Packages:
 
-```{r}
+```r
 library(rvest)
 library(stringr)
 library(tidyr)
@@ -15,7 +15,7 @@ library(parallel)
 
 Scrapping the homepage is relatively straightforward because it is not password protected. Due to this, I scrapped this page first. Outside of R, I created a CSV with the output of the table name, so in the scrape, each year is given a name, such as "2003_Home_Page.csv."
 
-```{r eval = FALSE}
+```r
 URL <- "https://kenpom.com/index.php?y="
 years <- read.csv("Years.csv", stringsAsFactors = FALSE)
 
@@ -95,7 +95,7 @@ Function home_page_clean_up explained:
 
   14. Returns the results from the tryCatch
   
-```{r eval = FALSE}
+```r
 home_page_col_names <- c("Overall_Rank", "Team", "Home_Page_Luck", "Home_Page_Luck_Rank", 
                          "Home_Page_Strength_Of_Schedule_AdjEM", "Home_Page_Strength_Of_Schedule_AdjEM_Rank",
                          "Home_Page_Strength_Of_Schedule_Opp_O", "Home_Page_Strength_Of_Schedule_Opp_O_Rank",
@@ -136,7 +136,7 @@ Function make_tables_home_page explained:
 
   5. Writes the CSV out and puts it in the proper folder
 
-```{r eval = FALSE}
+```r
 Path <- "/Users/joeyj/Desktop/Desktop/R/March Madness/Ken Pom/Data/Home_Page/"
 make_tables_home_page <- function(x, name, table, path) { # 1.
   file_name = paste0(name[x], "_Home_Page.csv", sep="") # 2. 
@@ -212,7 +212,7 @@ Function get_game_plan Explained:
   
   14. Returns the output
   
-```{r eval = FALSE}
+```r
 get_game_plan <- function (table_name, name, url, year) { # 1.
   Sys.sleep(1) # 2.
   out = tryCatch ({ # 3.
@@ -236,7 +236,7 @@ get_game_plan <- function (table_name, name, url, year) { # 1.
 
 Due to the number of files I wanted to scrape, I decided to parallel the operation across multiple cores of my computer. My computer has 12 cores, so I decided to use 11 of them to do this operation. Also, whenever using parallel in r, you have to send any functions, data frames, lists, and any imported libraries across all cores of the computer.
 
-```{r eval = FALSE}
+```r
 game_plan_url <- "https://kenpom.com/gameplan.php?team="
 cl <- parallel::makeCluster(detectCores() - 1)
 parallel::clusterExport(cl, c("get_game_plan", "teams", "game_plan_url", "url", "my_session",
@@ -366,7 +366,7 @@ Function clean_up_schedule Explained:
   
   29. returns the out from the tryCatch 
 
-```{r eval = FALSE} 
+```r
 new_names <- c("Date", "Team_2_Rank", "Team_2", "Result", "Location", "Pace", "Offense_Eff",
                "Offense_Eff_Rank", "Offense_eFG", "Offense_TO", "Offense_OR", "Offense_FTR",
                "Offense_2P_Shots", "Offense_2P_Percent", "Offense_3P_Shots", 
@@ -428,7 +428,7 @@ Function export Explained:
   
   6. Writes the file out and directs it to the correct path
   
-```{r eval = FALSE}
+```r
 export <- function(x, name, table, path) { # 1. 
   file_name_schedule = paste0(name[x], ".csv", sep = "") # 2.
   year = str_extract(name[x], "[0-9]+") # 3. 
@@ -477,8 +477,7 @@ Function get_ken_pom Explained:
   
   15. Returns the output of the function
   
-```{r eval = FALSE}
-
+```r
 get_ken_pom <- function (name, url, year, other_url) { # 1.
   Sys.sleep(1) # 2.
   out = tryCatch ({ # 3.
@@ -528,7 +527,7 @@ Function clean_up_columns Explained:
   
   12. Returns out
 
-```{r eval = FALSE}
+```r
 clean_up_columns <- function(table, name, x,y) { # 1.
   out = tryCatch ({ # 2.
     cleanup = table
@@ -558,7 +557,7 @@ Function make_tables Explained:
   
   4. Writes out the data frame and assigns it to the correct folder
 
-```{r eval = FALSE}
+```r
 make_tables <- function(x, name, table, path) { # 1.
   file_name <- paste0(name[x], ".csv", sep="") # 2.
   file = table[[x]] # 3.
@@ -568,7 +567,7 @@ make_tables <- function(x, name, table, path) { # 1.
 
 #### Efficiency:
 
-```{r eval = FALSE}
+```r
 efficiecny_path <- "/Users/joeyj/Desktop/Desktop/R/March Madness/Ken Pom/Data/Efficiency/"
 efficiency <- mapply(get_ken_pom, 
                      years$Stats, 
@@ -581,7 +580,7 @@ lapply(1:18, make_tables, name = years$Stats, table = efficiency_clean_up, effic
 
 ##### Four Factors:
 
-```{r eval = FALSE}
+```r
 four_factors_path <- "/Users/joeyj/Desktop/Desktop/R/March Madness/Ken Pom/Data/Four_Factors/"
 four_factors <- mapply(get_ken_pom, 
                      years$Four_Factors, 
@@ -594,7 +593,7 @@ lapply(1:18, make_tables, name=years$Four_Factors, table=four_factors_clean_up, 
 
 #### Point Distribution:
 
-```{r eval = FALSE}
+```r
 point_distribution_path <- "/Users/joeyj/Desktop/Desktop/R/March Madness/Ken Pom/Data/Point_Distribution/"
 point_distribution <- mapply(get_ken_pom,
                              years$Point_Distribution,
@@ -635,7 +634,7 @@ Function clean_up_msc Explained:
   
   12. Returns out
 
-```{r eval = FALSE}
+```r
 clean_up_msc <- function(table, name) { # 1.
   out = tryCatch ({ # 2.
     cleanup = table
@@ -655,7 +654,7 @@ clean_up_msc <- function(table, name) { # 1.
 }
 ```
 
-```{r eval = FALSE}
+```r
 offense_msc_team_stats_path <- "/Users/joeyj/Desktop/Desktop/R/March Madness/Ken Pom/Data/Msc_Team_Stats_Offense/"
 offense_msc_team_stats <- mapply(get_ken_pom,
                          years$Offense_Msc_Team_Stats,
@@ -666,7 +665,7 @@ offense_msc_team_stats_cleanup <- mapply(clean_up_msc, offense_msc_team_stats, y
 lapply(1:18, make_tables, years$Offense_Msc_Team_Stats, offense_msc_team_stats_cleanup, offense_msc_team_stats_path)
 ```
 
-```{r eval = FALSE}
+```r
 defense_msc_team_stats_path <- "/Users/joeyj/Desktop/Desktop/R/March Madness/Ken Pom/Data/Msc_Team_Stats_Defense/"
 defense_msc_team_stats <-  mapply(get_ken_pom,
                                   years$Defense_Msc_Team_Stats,
@@ -707,7 +706,7 @@ Function clean_up_team_experience Explained:
   
   12. Returns out
   
-```{r eval = FALSE}
+```r
 clean_up_team_experience <- function(table, name) { # 1.
   out = tryCatch ({ # 2.
     cleanup = table 
@@ -727,7 +726,7 @@ clean_up_team_experience <- function(table, name) { # 1.
 }
 ```
 
-```{r eval = FALSE}
+```r
 height <- read.csv("height_experience_years.csv", stringsAsFactors = FALSE)
 height_experience_path <- "/Users/joeyj/Desktop/Desktop/R/March Madness/Ken Pom/Data/Height_Experience/"
 height_exerperience <-  mapply(get_ken_pom,
